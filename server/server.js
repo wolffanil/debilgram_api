@@ -58,10 +58,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createGroup", ({ users, chatName, groupAdmin }) => {
-    console.log(users, "USER");
-    console.log(groupAdmin, "GORUP");
-    console.log(chatName, "Name");
-
+  
     if (!users) return;
     users.forEach((user) => {
       if (user === groupAdmin) return;
