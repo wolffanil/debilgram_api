@@ -19,22 +19,21 @@ class ChatService {
       background: "",
     });
 
-    const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
-      "users",
-      this.returnCurrentUserData()
-    );
+    const FullChat = await Chat.findOne({ _id: createdChat._id })
+      .populate("users", this.returnCurrentUserData())
+      .lean();
 
     return FullChat;
   }
 
   async existChat({ user, userId }) {
-    console.log(user, userId);
-
     let isChat = await Chat.find({
       isGroupChat: false,
       $and: [
-        { users: { $elemMatch: { $eq: user.id } } },
-        { users: { $elemMatch: { $eq: userId } } },
+        // { users: { $elemMatch: { $eq: user.id } } },
+        // { users: { $elemMatch: { $eq: userId } } },
+        { "users.0": userId },
+        { "users.1": user.id },
       ],
     })
       .lean()
@@ -57,7 +56,7 @@ class ChatService {
       .sort({ updatedAt: -1 })
       .lean();
 
-    chats = User.populate(chats, {
+    chats = await User.populate(chats, {
       path: "latestMessage.sender",
       select: this.returnCurrentUserData(),
     });
@@ -66,7 +65,7 @@ class ChatService {
   }
 
   async createGroupChat({ body, user, next }) {
-    const { clients, name } = body;
+    const { clients, name, background } = body;
 
     if (!clients || !name)
       return next(new AppError("Пожалуйста заполните все поля", 400));
@@ -84,6 +83,7 @@ class ChatService {
       users,
       isGroupChat: true,
       groupAdmin: user.id,
+      background,
     });
 
     const fullGropChat = await Chat.findById(groupChat._id)
@@ -93,8 +93,8 @@ class ChatService {
     return fullGropChat;
   }
 
-  async addToGroup({ params, next }) {
-    const { chatId, userId } = params;
+  async addToGroup({ body, next }) {
+    const { chatId, userId } = body;
 
     const added = await Chat.findByIdAndUpdate(
       chatId,
@@ -131,7 +131,7 @@ class ChatService {
     return updatedChat;
   }
 
-  async removeFromGroup({ params, next }) {
+  async removeFromGroup({ body, next }) {
     const { chatId, userId } = body;
 
     const removed = await Chat.findByIdAndUpdate(
@@ -150,7 +150,7 @@ class ChatService {
   }
 
   returnCurrentUserData() {
-    const str = "_id name username email photoProfile";
+    const str = "_id name username email photoProfile isOnline";
 
     return str;
   }

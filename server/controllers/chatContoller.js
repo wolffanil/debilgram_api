@@ -1,4 +1,4 @@
-const ChatService = require("../services/chatService");
+const ChatService = require("../services/ChatService");
 const catchAsync = require("../utils/catchAsync");
 
 class ChatController {
@@ -29,9 +29,9 @@ class ChatController {
   });
 
   addToGroup = catchAsync(async (req, res, next) => {
-    const params = req.params;
+    const body = req.body;
 
-    const chat = await ChatService.addToGroup({ params, next });
+    const chat = await ChatService.addToGroup({ body, next });
 
     res.status(200).json({ chat });
   });

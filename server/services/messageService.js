@@ -6,7 +6,9 @@ class MessageService {
   async getAllMessages({ params }) {
     const { chatId } = params;
 
-    const messages = await Message.find({ chat: chatId }).lean();
+    const messages = await Message.find({ chat: chatId })
+      .populate("sender", "_id photoProfile name")
+      .lean();
 
     return messages;
   }
